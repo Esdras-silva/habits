@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+model User {
+  id        String  @id @default(cuid())
+  name      String
+  email     String
+  googleId  String  @unique
+  avatarUrl String?
+  Habit     Habit[]
+
+  completedHabit completedHabit[]
+
+  @@map("users")
+}
+
+model Habit {
+  id         String   @id @default(uuid())
+  title      String
+  created_at DateTime
+
+  weekDays HabitWeekDays[]
+  User     User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id  String
+
+  completedHabit completedHabit[]
+
+  @@map("habits")
+}
+
+model HabitWeekDays {
+  id       String @id @default(uuid())
+  habit_id String
+  week_day Int
+
+  habit Habit @relation(fields: [habit_id], references: [id], onDelete: Cascade)
+
+  @@unique([habit_id, week_day])
+  @@map("habit_week_days")
+}
+
+model Day {
+  id   String   @id @default(uuid())
+  date DateTime
+
+  completedHabit completedHabit[]
+
+  @@unique([date])
+  @@map("days")
+}
+
+model completedHabit {
+  id        String  @id @default(uuid())
+  completed Boolean @default(false)
+
+  Day     Day?    @relation(fields: [day_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  Habit   Habit?  @relation(fields: [habitId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  User    User?   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  day_id  String?
+  habitId String?
+  userId  String?
+
+  @@unique([day_id, habitId, userId])
+  @@map("completed_habits")
+}
