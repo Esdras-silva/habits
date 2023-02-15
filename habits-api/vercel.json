@@ -1,0 +1,15 @@
+{
+  "name": "habits-api",
+  "version": 2,
+  "public": true,
+  "build":{
+    "src": "api/server.ts",
+    "use": "@vercel/node"
+  },
+  "routes":[
+    {
+      "src": "/(.*)",
+      "dest": "api/server.ts"
+    }
+  ]
+}
